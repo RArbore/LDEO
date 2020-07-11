@@ -16,9 +16,9 @@ train_pos = ["1x6", "2x3", "2x5", "2x6", "3x3", "3x5", "3x8", "4x3", "4x4", "4x5
 valid_pos = ["1x5", "2x4", "3x4", "3x6", "5x7", "7x3"]
 test_pos = ["4x24", "9x10", "12x21", "22x38", "32x32", "35x25"]
 
-for i in range(0, 6):
-    image = imageio.imread("data_testset/MOA209_125m_mask"+str(test_pos[i])+".tif").astype('float32')
-    label = imageio.imread("data_testset/MOA209_125m_mask"+str(test_pos[i])+"_mask.tif").astype('float32')
+for i in range(0, 26):
+    image = imageio.imread("data_trainset/fracture_"+str(train_pos[i])+".tif").astype('float32')
+    label = imageio.imread("data_trainset/fracture_"+str(train_pos[i])+"_mask.tif").astype('float32')
 
     image_tensor = torch.from_numpy(image).view(1, 1000, 1000).float() / 65536.0
     label_tensor = torch.from_numpy(label).view(1, 1000, 1000).float() / 256.0
@@ -36,4 +36,4 @@ data = data.permute(1, 0, 2, 3)
 
 print(data.size())
 
-torch.save(data, "LDEO_TEST.pt")
+torch.save(data, "LDEO_TRAIN.pt")

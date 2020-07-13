@@ -9,6 +9,8 @@ padding = 1
 
 DATA_DIMENSIONS = [1000, 1000]
 
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
 def roc_auc_compute_fn(y_preds, y_targets):
     y_true = torch.round(y_targets).int().detach().numpy()
     y_pred = torch.round(y_preds).int().detach().numpy()
@@ -124,18 +126,80 @@ class UNet(torch.nn.Module):
         out = s11[:, 0, :, :].view(input.size(0), 1, DATA_DIMENSIONS[0], DATA_DIMENSIONS[1])
         return out * torch.tensor(0.9998) + torch.tensor(0.0001)
 
+# class UNet(torch.nn.Module):
+#
+#     def __init__(self):
+#         super(UNet, self).__init__()
+#         self.s1 = torch.nn.Sequential(
+#             torch.nn.Conv2d(1, nf, kernel, 1, padding),
+#             torch.nn.LeakyReLU(0.2),
+#             torch.nn.Conv2d(nf, nf, kernel, 1, padding),
+#             torch.nn.LeakyReLU(0.2),
+#         )
+#         self.s2 = torch.nn.Sequential(
+#             torch.nn.MaxPool2d(2),
+#             torch.nn.Conv2d(nf, nf * 2, kernel, 1, padding),
+#             torch.nn.LeakyReLU(0.2),
+#             torch.nn.Conv2d(nf * 2, nf * 2, kernel, 1, padding),
+#             torch.nn.LeakyReLU(0.2),
+#         )
+#         self.s3 = torch.nn.Sequential(
+#             torch.nn.MaxPool2d(2),
+#             torch.nn.Conv2d(nf * 2, nf * 4, kernel, 1, padding),
+#             torch.nn.LeakyReLU(0.2),
+#             torch.nn.Conv2d(nf * 4, nf * 4, kernel, 1, padding),
+#             torch.nn.LeakyReLU(0.2),
+#         )
+#         self.s4 = torch.nn.Sequential(
+#             torch.nn.Conv2d(nf * 4, nf * 2, kernel, 1, padding),
+#             torch.nn.LeakyReLU(0.2),
+#             torch.nn.Conv2d(nf * 2, nf * 2, kernel, 1, padding),
+#             torch.nn.LeakyReLU(0.2),
+#         )
+#         self.s5 = torch.nn.Sequential(
+#             torch.nn.Conv2d(nf * 2, nf, kernel, 1, padding),
+#             torch.nn.LeakyReLU(0.2),
+#             torch.nn.Conv2d(nf, nf, kernel, 1, padding),
+#             torch.nn.LeakyReLU(0.2),
+#         )
+#         self.s6 = torch.nn.Sequential(
+#             torch.nn.Conv2d(nf, 2, 1),
+#             torch.nn.Softmax(dim=1),
+#         )
+#         self.upconv1 = torch.nn.Sequential(
+#             torch.nn.ConvTranspose2d(nf * 4, nf * 2, 2, 2)
+#         )
+#         self.upconv2 = torch.nn.Sequential(
+#             torch.nn.ConvTranspose2d(nf * 2, nf, 2, 2)
+#         )
+#
+#     def forward(self, input):
+#         before = input.view(input.size(0), 1, DATA_DIMENSIONS[0], DATA_DIMENSIONS[1])
+#
+#         s1 = self.s1(before)
+#         s2 = self.s2(s1)
+#         s3 = self.s3(s2)
+#         s4 = self.s4(torch.cat((s2, self.upconv1(s3)), dim=1))
+#         s5 = self.s5(torch.cat((s1, self.upconv2(s4)), dim=1))
+#         s6 = self.s6(s5)
+#
+#         out = s6[:, 0, :, :].view(input.size(0), 1, DATA_DIMENSIONS[0], DATA_DIMENSIONS[1])
+#         return out * torch.tensor(0.9998) + torch.tensor(0.0001)
+
 with torch.no_grad():
-    model = UNet()
+    model = UNet().to(device)
     model.load_state_dict(torch.load("unettrial2/model.pt"))
     model.eval()
 
-    test_data = torch.load("LDEO_TEST.pt")
+    test_data = torch.load("LDEO_TEST.pt").to(device)
 
     print(test_data.size())
 
     test_data = test_data.permute(1, 0, 2, 3)
 
-    output_tensor = model(test_data[:, 0, :, :])
+    output_tensor = model(test_data[:, 0, :, :]).cpu()
+
+    test_data = test_data.cpu()
 
     print(output_tensor.size())
 

@@ -1,0 +1,3 @@
+unettrial1 - Custom 5-depth nf 16
+unettrial2 - Custom 5-depth nf 24
+unettrial3 - 2-depth nf 24

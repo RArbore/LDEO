@@ -4,7 +4,7 @@ import sys
 
 comparison_value = int(sys.argv[1])
 
-folders = ["unettrial1", "unettrial2"]
+folders = ["unettrial1", "unettrial2", "unettrial3"]
 
 fig = plt.figure()
 
